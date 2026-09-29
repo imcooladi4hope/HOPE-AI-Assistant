@@ -1,0 +1,888 @@
+HOPE Coding Ecosystem Integration Requirements Draft
+
+Purpose
+
+This document records the requirements for adding ECC and future coding ecosystems to HOPE.
+
+This is a requirements draft only. It is not coding instructions, an implementation plan, or a patch plan.
+
+HOPE must remain universal, so ECC must not be added as a one-off hardcoded integration. The same architecture should later support Cline, Ruflo, Hermes, OpenCode, Qwen Code, Gemini CLI, Aider, local coding agents, and remote coding agents.
+
+---
+
+1. Main architectural decision
+
+HOPE must upgrade the existing Agent Manager instead of creating a separate top-level Coding Agent Manager.
+
+HOPE should also add a reusable internal service called something like:
+
+Coding Ecosystem Integration Service
+
+This service is not a new independent manager. It translates external coding ecosystems into HOPE-managed resources and connects them to the existing managers.
+
+ECC should become a managed "coding_agent_ecosystem" resource.
+
+The architecture should be:
+
+- Repository Manager acquires and verifies the ecosystem.
+- Coding Ecosystem Integration Service understands its components.
+- Skill Manager manages its skills and workflows.
+- Capability Manager evaluates whether its capabilities are usable.
+- Agent Manager registers and coordinates its agents.
+- Sandbox Manager controls execution.
+- API Manager provides models and providers.
+- Security Manager scans its code and configuration.
+- Conversation Manager provides direct conversations and task interaction.
+
+The system must continue using HOPE’s universal management bus, shared lifecycle contract, permissions, readiness system, and dashboard model.
+
+---
+
+2. Definition of a coding ecosystem
+
+A coding ecosystem is larger than one AI model or one agent.
+
+It may contain:
+
+- Specialized agents
+- Skills
+- Commands
+- Rules
+- Hooks
+- Memory workflows
+- Context files
+- MCP configuration
+- Tool definitions
+- Security scanners
+- Runtime scripts
+- Dependency requirements
+- Model requirements
+- Repository workflows
+- Testing workflows
+- Review workflows
+- Installation and update logic
+
+ECC should therefore be treated as a bundle of related resources.
+
+Its components must remain connected to the parent ECC ecosystem while also being registered inside their appropriate HOPE managers.
+
+ECC must not be copied into one folder and executed as an uncontrolled package.
+
+---
+
+3. Repository Manager ownership
+
+Repository Manager owns the source and lifecycle of ECC.
+
+It must handle:
+
+- GitHub repository discovery
+- GitLab and local repository discovery
+- Repository acquisition
+- Release selection
+- Commit and tag pinning
+- Source hashing
+- License detection
+- Dependency discovery
+- Security analysis
+- Repository caching
+- Updates
+- Version comparison
+- Diffs
+- Disposable worktrees
+- Rollback
+- Import preparation
+- Handoff to the correct managers
+
+Repository Manager must not execute agents just because it downloaded a repository.
+
+Its responsibility is:
+
+Acquire → verify → inspect → prepare → hand off
+
+When ECC is imported, Repository Manager should produce an import package containing:
+
+- Repository source
+- Selected release or commit
+- Source hash
+- License information
+- Detected components
+- Dependencies
+- Runtime requirements
+- Permissions
+- Security findings
+- Compatibility information
+- Proposed manager assignments
+- Update and rollback information
+
+Repository Manager must preserve the original source identity and must never replace it with an unofficial or unverified copy without clearly reporting that change.
+
+---
+
+4. Coding Ecosystem Integration Service
+
+The Coding Ecosystem Integration Service is the translator between an external ecosystem and HOPE.
+
+It must:
+
+- Read ecosystem manifests
+- Detect agents, skills, commands, rules, hooks, tools, and runtimes
+- Normalize different external formats
+- Preserve relationships between components
+- Create HOPE resource records
+- Route skills to Skill Manager
+- Route agents to Agent Manager
+- Route capability requirements to Capability Manager
+- Request sandbox profiles
+- Request API/model bindings
+- Send components for security review
+- Coordinate readiness checks
+- Provide ecosystem-level status
+- Support enable, disable, update, rollback, and removal
+- Prevent duplicate installation
+- Track ownership of imported files and resources
+
+It must not own:
+
+- Repository storage
+- API credentials
+- Skill execution
+- Shell execution
+- Security approval
+- Final permission decisions
+
+Those responsibilities remain with the existing managers.
+
+The service must be generic. It should not contain ECC-only logic that prevents other ecosystems from being added later.
+
+---
+
+5. Agent Manager upgrade requirements
+
+The existing Agent Manager must become ecosystem-neutral.
+
+It should support:
+
+- Individual agents
+- Agent groups
+- Agent bundles
+- Agent ecosystems
+- Local agents
+- Remote agents
+- Sub-agents
+- Workflow agents
+- Coding agents
+- External agent harnesses
+
+ECC agents should receive stable HOPE identities that do not depend only on display names.
+
+Each agent must record:
+
+- Stable identity
+- Parent ecosystem
+- Source identity
+- Display name
+- Purpose
+- Supported tasks
+- Input schema
+- Output schema
+- Required skills
+- Required tools
+- Required API capabilities
+- Required model qualities
+- Runtime type
+- Workspace permissions
+- Network permissions
+- Data-access permissions
+- Risk level
+- Approval requirements
+- Resource limits
+- Operating-system requirements
+- Version
+- Source repository
+- Source commit
+- Source hash
+- Health status
+
+Agent Manager must use runtime drivers instead of hardcoded provider integrations.
+
+Supported driver categories should include:
+
+- Python SDK
+- Node SDK
+- CLI
+- Docker
+- HTTP
+- A2A
+- MCP
+- Local process
+- Remote process
+- Ecosystem adapter
+
+Agent Manager must support coordination between:
+
+- HOPE
+- ECC planner
+- ECC implementation agent
+- ECC test agent
+- ECC reviewer
+- ECC security agent
+- Other sub-agents
+- External repositories
+- API providers
+
+It must preserve task ownership, execution history, approvals, artifacts, logs, and final results.
+
+---
+
+6. Agent lifecycle and readiness
+
+Agent Manager must clearly distinguish between different states.
+
+Required states include:
+
+- Discovered
+- Imported
+- Installed
+- Configured
+- Loaded
+- Ready
+- Degraded
+- Blocked
+- Simulated
+- Failed
+- Disabled
+- Updating
+- Rolled back
+
+An agent must not appear fully ready merely because its metadata was imported.
+
+For example, an ECC reviewer may be imported successfully but remain degraded because:
+
+- The repository is not mounted
+- Required skills are missing
+- The API is unavailable
+- The sandbox is blocked
+- Git is unavailable
+- Required tools are missing
+- Permissions have not been approved
+
+The Agent Manager dashboard must show the exact reason for every non-ready state and provide repair or approval actions where possible.
+
+The user must be able to:
+
+- Open a direct agent dashboard
+- Start a conversation
+- Assign work
+- Enable or disable the agent
+- Test readiness
+- View permissions
+- View tools
+- View skills
+- View API/model selection
+- View runtime
+- View logs
+- Retry a failed task
+- Repair the agent
+- Roll back an update
+- Remove the agent
+
+Double-clicking an agent must open an actionable dashboard, not a static information page.
+
+Right-click actions should include:
+
+- Chat
+- Assign task
+- Test
+- Enable
+- Disable
+- Repair
+- Update
+- View permissions
+- View context
+- View activity
+- View logs
+- Remove
+
+---
+
+7. Skill Manager upgrade requirements
+
+Skill Manager must evolve from a catalogue into an executable skill platform.
+
+It must support:
+
+- Imported skills
+- Native HOPE skills
+- External skill formats
+- Commands
+- Rules
+- Workflows
+- Skill dependencies
+- Agent bindings
+- Capability bindings
+- Runtime dependencies
+- Tool requirements
+- Permission requirements
+- Skill testing
+- Versioning
+- Updates
+- Rollback
+- Conflict detection
+- Execution history
+
+Every skill must declare:
+
+- Skill identity
+- Parent ecosystem
+- Name
+- Version
+- Description
+- Inputs
+- Outputs
+- Required tools
+- Required capabilities
+- Runtime requirements
+- API/model requirements
+- File permissions
+- Shell permissions
+- Network permissions
+- Secret-access requirements
+- Approval requirements
+- Security risk
+- Tests
+- Source repository
+- Source commit
+- Source hash
+
+The Skill Manager must know whether a skill is:
+
+- Informational only
+- Callable
+- Executable
+- A multi-step workflow
+- Agent-bound
+- User-invokable
+- HOPE-invokable
+- Sandbox-dependent
+- API-dependent
+
+A skill must not merely appear in the UI. HOPE must know how to validate, execute, monitor, stop, retry, and report it.
+
+---
+
+8. Skill execution and dependencies
+
+Skill execution must be governed.
+
+A skill should:
+
+1. Receive validated inputs.
+2. Check dependencies.
+3. Request required tools.
+4. Request model/API access.
+5. Request sandbox permissions.
+6. Execute through an approved runtime.
+7. Emit progress.
+8. Produce structured output.
+9. Record logs and artifacts.
+10. Report errors.
+11. Support cancellation.
+12. Support retry.
+13. Support rollback where possible.
+
+The Skill Manager must report missing dependencies before execution.
+
+Examples of missing dependencies may include:
+
+- Git
+- Python
+- Node.js
+- Android SDK
+- Gradle
+- Java
+- Test runner
+- Repository access
+- API provider
+- Shell permission
+- Network permission
+- Workspace write permission
+
+The Skill Manager must detect conflicts such as:
+
+- Duplicate skill names
+- Duplicate command names
+- Conflicting rules
+- Multiple hooks targeting the same lifecycle event
+- Incompatible runtime versions
+- Conflicting workspace instructions
+- Multiple ecosystems installing the same resource
+
+HOPE must show a conflict-resolution view instead of silently overwriting resources.
+
+---
+
+9. Capability Manager upgrade requirements
+
+Capability Manager must represent real abilities, not only labels.
+
+It should answer:
+
+What can HOPE actually do right now with the installed agents, skills, APIs, tools, permissions, and hardware?
+
+A capability must record:
+
+- Capability identity
+- Human-readable name
+- Parent capability
+- Required agents
+- Required skills
+- Required tools
+- Required APIs
+- Required repositories
+- Required permissions
+- Required sandbox profile
+- Hardware requirements
+- Resource requirements
+- Readiness rules
+- Health status
+- Supported task types
+- Cost and token requirements
+
+Capability states should include:
+
+- Known
+- Discovered
+- Partially available
+- Configured
+- Ready
+- Degraded
+- Blocked
+- Unavailable
+- Simulated
+
+Capability Manager should compose larger capabilities from smaller capabilities.
+
+For example:
+
+Android application development
+
+- Repository analysis
+- Android architecture planning
+- Kotlin implementation
+- UI implementation
+- Gradle build
+- Test execution
+- Security review
+- APK packaging
+- Release verification
+
+ECC may provide planning, implementation, testing, and review. Other tools and managers must provide Android SDK, Gradle, Java, signing, and deployment.
+
+Capability Manager must not claim that HOPE can produce an APK if the Android build environment is missing.
+
+---
+
+10. Capability readiness and scorecards
+
+Capability Manager must provide readiness scorecards.
+
+Example categories:
+
+- Agents
+- Skills
+- APIs
+- Runtime tools
+- Repository
+- Permissions
+- Sandbox
+- Hardware
+- Token and quota availability
+- Security status
+- Output artifact support
+
+Each category should show:
+
+- Ready
+- Missing
+- Degraded
+- Blocked
+- Not applicable
+
+The overall capability status must be calculated from its dependencies.
+
+Example:
+
+Capability: Android application development
+
+- Planner agent: Ready
+- Coding agent: Ready
+- Reviewer agent: Degraded
+- Kotlin skills: Ready
+- Android SDK: Missing
+- Gradle: Missing
+- Gemini API: Connected
+- Repository: Available
+- Sandbox: Build execution blocked
+- Overall status: Degraded
+
+The scorecard must explain exactly how to repair the capability.
+
+---
+
+11. Sandbox Manager requirements
+
+Sandbox Manager must control all risky execution.
+
+It must govern:
+
+- File access
+- Workspace boundaries
+- Shell commands
+- Network access
+- Environment variables
+- Secret access
+- Git operations
+- Build commands
+- Test commands
+- Hooks
+- Package installation
+- Process limits
+- CPU limits
+- RAM limits
+- Workspace isolation
+- Approval requirements
+- Rollback boundaries
+
+Default ECC policy should be restrictive:
+
+- Workspace read: allowed
+- Workspace write: approval required
+- Shell execution: approval required
+- Network access: denied unless required
+- Secret access: denied by default
+- Git push: denied by default
+- File deletion: approval required
+- Package installation: approval required
+- Hooks: sandboxed
+- Builds: isolated
+- Tests: isolated where practical
+
+Every sandbox request must show:
+
+- Requesting agent
+- Requesting skill
+- Command or action
+- Files affected
+- Network destination
+- Required permission
+- Risk level
+- Approval decision
+- Result
+
+Sandbox failures must not produce endless repair loops.
+
+If a sandbox request fails, HOPE must show the real cause, stop repeated retries, and provide a clear action such as:
+
+- Approve
+- Change permission
+- Repair sandbox
+- Run in simulation
+- Cancel task
+- Retry once
+
+---
+
+12. API Manager and model coordination
+
+ECC must not independently manage HOPE’s API credentials or provider registry.
+
+API Manager must own:
+
+- Providers
+- Endpoints
+- Credentials
+- Models
+- Quotas
+- Rate limits
+- Health checks
+- Routing
+- Fallbacks
+- Protocol drivers
+- Token budgets
+- Privacy policies
+
+ECC agents should request model capabilities rather than hardcoded provider names.
+
+A request may specify:
+
+- Coding support
+- Tool calling
+- Required context size
+- Structured output
+- Reasoning quality
+- Privacy requirement
+- Cost limit
+- Latency limit
+- Local-only requirement
+
+API Manager then selects the appropriate connected provider.
+
+Possible routing examples:
+
+- Planning: reasoning-capable model
+- Implementation: coding-capable model
+- Large repository analysis: long-context model
+- Security review: security-focused model
+- Simple formatting: economical model
+- Offline work: local model
+
+API Manager must provide clear failure states when:
+
+- Provider credentials are missing
+- Model is unavailable
+- Quota is exhausted
+- Endpoint is unhealthy
+- Required protocol is unsupported
+- Model does not support tools
+- Context window is too small
+
+---
+
+13. Security Manager requirements
+
+ECC must be treated as untrusted external software until reviewed.
+
+Security Manager should scan:
+
+- Repository source
+- Installation scripts
+- Hooks
+- Shell scripts
+- MCP configurations
+- Agent instructions
+- Prompt-injection content
+- Dependencies
+- Secrets
+- Network access
+- File operations
+- Runtime scripts
+- Configuration files
+
+Security Manager must produce:
+
+- Findings
+- Severity
+- Affected component
+- Recommended action
+- Whether execution is blocked
+- Whether user approval is sufficient
+- Whether the component should be disabled
+
+Security review must be attached to the ecosystem and to individual components.
+
+The user must be able to disable a dangerous hook or skill without removing the complete ECC ecosystem.
+
+Every security decision must be recorded in the audit trail.
+
+---
+
+14. Conversation Manager and user interaction
+
+The user must be able to work with ECC through HOPE’s normal conversation system.
+
+Supported interaction modes:
+
+- Ask HOPE to use ECC automatically
+- Select ECC directly
+- Select a specific ECC agent
+- Chat with the planner
+- Chat with the implementation agent
+- Chat with the reviewer
+- Chat with the security agent
+- Assign a repository task
+- Approve a plan
+- Approve file changes
+- Approve shell commands
+- Review test results
+- Review security findings
+- Review the final diff
+- Continue interrupted work
+
+The interface must show live statuses such as:
+
+- Thinking
+- Planning
+- Working
+- Reading
+- Editing
+- Running tests
+- Reviewing
+- Generating
+- Coding
+- Surfacing
+- Collecting
+- Waiting for approval
+- Blocked
+- Completed
+- Failed
+
+The user must not have to guess whether an agent is working or silently stuck.
+
+Each task should have:
+
+- Task ID
+- Parent conversation
+- Selected ecosystem
+- Selected agent
+- Selected skills
+- Repository
+- API/model
+- Sandbox profile
+- Current phase
+- Current status
+- Artifacts
+- Logs
+- Approvals
+- Errors
+- Final result
+
+---
+
+15. One-click lifecycle, dashboard, and updates
+
+The user should be able to manage ECC using HOPE’s standard lifecycle vocabulary:
+
+- Add
+- Inspect
+- Install
+- Enable
+- Disable
+- Test
+- Repair
+- Update
+- Rollback
+- Remove
+- Open dashboard
+
+Add
+
+The user selects Add Resource and chooses ECC.
+
+HOPE should:
+
+1. Find the official source.
+2. Display source, license, and version.
+3. Allow release or commit selection.
+4. Pin the source.
+5. Calculate the source hash.
+6. Scan the repository.
+7. Detect components.
+8. Detect dependencies.
+9. Show required permissions.
+10. Show a preview.
+11. Ask for one final approval.
+
+Import
+
+After approval:
+
+1. Repository Manager stores the source.
+2. Integration Service reads the ecosystem.
+3. Security Manager scans it.
+4. Skill Manager imports skills and workflows.
+5. Agent Manager registers agents.
+6. Capability Manager creates capabilities.
+7. Sandbox Manager creates execution profiles.
+8. API Manager creates model bindings.
+9. Conversation Manager creates dashboard and chat entries.
+10. HOPE runs readiness checks.
+
+Enable
+
+HOPE must not enable ECC until required checks are complete.
+
+The user should see:
+
+- What is ready
+- What is degraded
+- What is blocked
+- What requires approval
+- What is optional
+- What can be repaired automatically
+
+Update
+
+An update preview must show:
+
+- Current version
+- New version
+- Changed agents
+- Changed skills
+- Changed commands
+- Changed hooks
+- Changed permissions
+- New dependencies
+- Security changes
+- Compatibility changes
+- Files that will be modified
+
+The user must be able to accept, reject, postpone, or roll back the update.
+
+Remove
+
+Removal must be ownership-aware.
+
+HOPE should remove only files and resources owned by ECC or HOPE.
+
+It must preserve:
+
+- User modifications
+- User repositories
+- User conversations
+- User-created skills
+- User rules
+- Shared tools used by other ecosystems
+- Independent API configurations
+
+---
+
+16. Resource management, future ecosystems, and final decision
+
+ECC must be implemented as one example of a generic ecosystem system.
+
+The same system must support future resources such as:
+
+- Cline
+- Ruflo
+- Hermes
+- OpenCode
+- Qwen Code
+- Gemini CLI
+- Cursor workflows
+- Aider
+- FreeLLMAPI-based tools
+- Local coding agents
+- Remote coding agents
+- Multi-agent repositories
+
+Every ecosystem should provide or generate:
+
+- Source manifest
+- Component manifest
+- Runtime adapter
+- Dependency declarations
+- Permission declarations
+- Capability declarations
+- Health checks
+- Install handler
+- Update handler
+- Remove handler
+- Rollback information
+
+HOPE must use the same universal manager vocabulary for every ecosystem.
+
+The final architectural decision is:
+
+«HOPE will not create a separate top-level Coding Agent Manager. HOPE will upgrade the existing Agent Manager to support generic agent ecosystems and add a reusable Coding Ecosystem Integration Service. ECC will be imported through Repository Manager and distributed through the universal management bus to Skill Manager, Capability Manager, Agent Manager, Sandbox Manager, API Manager, Security Manager, and Conversation Manager. The design must remain ecosystem-neutral and support future coding ecosystems without hardcoded provider-specific or project-specific logic.»
+
